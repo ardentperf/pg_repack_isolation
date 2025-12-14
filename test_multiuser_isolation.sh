@@ -18,6 +18,14 @@ ROW_COUNT=10000000  # Must match setup script's ROW_COUNT
 
 echo "=== Testing pg_repack privilege isolation between users ===" | tee ${LOG_FILE}
 echo "Date: $(date)" | tee -a ${LOG_FILE}
+
+# Get version information
+PG_CLIENT_VERSION=$(psql --version | head -1 | sed 's/psql (PostgreSQL) //')
+PG_SERVER_VERSION=$(psql -d ${DB_NAME} -t -c "SELECT version();" 2>/dev/null | xargs)
+REPACK_VERSION=$(psql -d ${DB_NAME} -t -c "SELECT extversion FROM pg_extension WHERE extname = 'pg_repack';" 2>/dev/null | xargs || echo "not installed")
+echo "PostgreSQL client (psql): ${PG_CLIENT_VERSION}" | tee -a ${LOG_FILE}
+echo "PostgreSQL server: ${PG_SERVER_VERSION}" | tee -a ${LOG_FILE}
+echo "pg_repack extension: ${REPACK_VERSION}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 
 # Check database exists
@@ -558,6 +566,12 @@ echo "" | tee -a ${LOG_FILE}
 echo "================================================================" | tee -a ${LOG_FILE}
 echo "                        TEST SUMMARY" | tee -a ${LOG_FILE}
 echo "================================================================" | tee -a ${LOG_FILE}
+echo "" | tee -a ${LOG_FILE}
+
+echo "Environment:" | tee -a ${LOG_FILE}
+echo "  PostgreSQL client (psql): ${PG_CLIENT_VERSION}" | tee -a ${LOG_FILE}
+echo "  PostgreSQL server: ${PG_SERVER_VERSION}" | tee -a ${LOG_FILE}
+echo "  pg_repack extension: ${REPACK_VERSION}" | tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 
 echo "User Privilege Configuration:" | tee -a ${LOG_FILE}

@@ -1,51 +1,56 @@
 === Testing pg_repack privilege isolation between users ===
-Date: Sun Dec 14 21:56:38 UTC 2025
+Date: Sun Dec 14 22:15:23 UTC 2025
+PostgreSQL client (psql): 17.7 (Ubuntu 17.7-0ubuntu0.25.04.1)
+PostgreSQL server: PostgreSQL 17.7 (Ubuntu 17.7-0ubuntu0.25.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 14.2.0-19ubuntu2) 14.2.0, 64-bit
+pg_repack extension: 1.5.2
 
 ✓ Database repack_isolation_test exists
 
-Source table OID: 22610
-Expected intermediate table: repack.table_22610
-Expected log table: repack.log_22610
+Source table OID: 22704
+Expected intermediate table: repack.table_22704
+Expected log table: repack.log_22704
 
 === Starting background workload ===
 Launching continuous UPDATE workload on user1_schema.source_data...
-✓ Background workload started with PID: 2510836
+✓ Background workload started with PID: 2517402
   2 concurrent clients updating random rows for up to 10 minutes
 
 === Starting pg_repack for repack_user1 in background ===
 Command: pg_repack --no-superuser-check -h localhost -U repack_user1 -d repack_isolation_test -t user1_schema.source_data
 Note: 10 million row table will take several minutes to repack
 
-pg_repack started with PID: 2510863
+pg_repack started with PID: 2517429
 Waiting for repack to start data copy operation...
   Waiting... (attempt 1/60)
-✓ Log table detected: repack.log_22610
-✓ Data copy in progress: INSERT INTO repack.table_22610
+✓ Log table detected: repack.log_22704
+✓ Data copy in progress: INSERT INTO repack.table_22704
 
 === Verifying intermediate objects ===
  schemaname | tablename |  tableowner  
 ------------+-----------+--------------
- repack     | log_22610 | repack_user1
+ repack     | log_22704 | repack_user1
 (1 row)
 
 
 Active repack queries:
    pid   |   usename    | state  |                                                 left                                                 
 ---------+--------------+--------+------------------------------------------------------------------------------------------------------
- 2510868 | repack_user1 | active | INSERT INTO repack.table_22610 SELECT id,data,created_at FROM ONLY user1_schema.source_data
- 2510847 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(399948::text, 8, '0') WHERE id = 39994
- 2510848 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(4998394::text, 8, '0') WHERE id = 4998
-(3 rows)
+ 2517105 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(6547495::text, 8, '0') WHERE id = 6547
+ 2517106 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(2886501::text, 8, '0') WHERE id = 2886
+ 2517410 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(5511057::text, 8, '0') WHERE id = 5511
+ 2517411 | repack_user1 | active | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(568565::text, 8, '0') WHERE id = 56856
+ 2517434 | repack_user1 | active | INSERT INTO repack.table_22704 SELECT id,data,created_at FROM ONLY user1_schema.source_data
+(5 rows)
 
 
-✓ pg_repack process 2510863 is still running
-✓ Background workload 2510836 is still running
+✓ pg_repack process 2517429 is still running
+✓ Background workload 2517402 is still running
   Updates so far: N/A
 
 === TEST 1: repack_user2 attempts to query repack_user1's log table ===
-Testing: repack.log_22610
-ERROR:  permission denied for table log_22610
-✓ PASS: repack_user2 CANNOT query repack.log_22610 (permission denied as expected)
+Testing: repack.log_22704
+ERROR:  permission denied for table log_22704
+✓ PASS: repack_user2 CANNOT query repack.log_22704 (permission denied as expected)
 
 === TEST 2: repack_user2 attempts to access intermediate table metadata ===
 Testing: Access to repack schema intermediate tables
@@ -65,7 +70,7 @@ LINE 1: SELECT * FROM user1_schema.source_data LIMIT 1;
 === TEST 4: no_repack_user attempts to access repack schema ===
 Testing: Access to repack schema
 ERROR:  permission denied for schema repack
-LINE 1: SELECT * FROM repack.log_22610 LIMIT 1;
+LINE 1: SELECT * FROM repack.log_22704 LIMIT 1;
                       ^
 ✓ PASS: no_repack_user CANNOT access repack schema (permission denied as expected)
 
@@ -74,7 +79,7 @@ Testing: Metadata visibility (pg_tables) - expected to be visible
 Testing: Data access - should be denied
   ℹ INFO: no_repack_user can see repack table names in pg_tables (normal PostgreSQL behavior)
 ERROR:  permission denied for schema repack
-LINE 1: SELECT * FROM repack.log_22610 LIMIT 1;
+LINE 1: SELECT * FROM repack.log_22704 LIMIT 1;
                       ^
 ✓ PASS: no_repack_user CANNOT access data (permission denied as expected)
   Note: Metadata visibility is normal; data access properly blocked
@@ -87,14 +92,14 @@ LINE 1: SELECT * FROM user1_schema.source_data LIMIT 1;
 ✓ PASS: no_repack_user CANNOT query user1_schema.source_data (permission denied as expected)
 
 === TEST 7: repack_user1 attempts to query own log table ===
-Testing: repack.log_22610
+Testing: repack.log_22704
 Context: Owner should have access to their own log table
  count 
 -------
-   126
+   643
 (1 row)
 
-✓ PASS: repack_user1 CAN query repack.log_22610 (expected)
+✓ PASS: repack_user1 CAN query repack.log_22704 (expected)
 
 === TEST 8: repack_user1 attempts to access own intermediate table metadata (pre-commit) ===
 Context: Owner queries own uncommitted table from outside serializable transaction
@@ -126,60 +131,62 @@ Checking for intermediate table visibility in pg_class (indicates transaction co
 Intermediate table details:
    relname   |   relowner   |  size   
 -------------+--------------+---------
- log_22610   | repack_user1 | 152 kB
- pk_22610    | repack_user1 | 0 bytes
- table_22610 | repack_user1 | 822 MB
+ log_22704   | repack_user1 | 360 kB
+ pk_22704    | repack_user1 | 0 bytes
+ table_22704 | repack_user1 | 822 MB
 (3 rows)
 
 
 ✓ pg_repack still running (applying logged changes from concurrent updates)
    pid   |   usename    |        state        |                                                 left                                                 
 ---------+--------------+---------------------+------------------------------------------------------------------------------------------------------
- 2510868 | repack_user1 | active              | CREATE UNIQUE INDEX index_22617 ON repack.table_22610 USING btree (id)
- 2510847 | repack_user1 | active              | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(6672946::text, 8, '0') WHERE id = 6672
- 2510876 | repack_user1 | idle in transaction | LOCK TABLE user1_schema.source_data IN ACCESS SHARE MODE
- 2510848 | repack_user1 | active              | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(5461550::text, 8, '0') WHERE id = 5461
- 2511166 | repack_user1 | active              | CREATE UNIQUE INDEX index_22617 ON repack.table_22610 USING btree (id)
-(5 rows)
+ 2517105 | repack_user1 | idle                | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(2245182::text, 8, '0') WHERE id = 2245
+ 2517106 | repack_user1 | active              | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(8053529::text, 8, '0') WHERE id = 8053
+ 2517410 | repack_user1 | idle                | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(4218915::text, 8, '0') WHERE id = 4218
+ 2517411 | repack_user1 | idle                | UPDATE user1_schema.source_data SET data = 'Updated-' || lpad(273249::text, 8, '0') WHERE id = 27324
+ 2517434 | repack_user1 | active              | CREATE UNIQUE INDEX index_22711 ON repack.table_22704 USING btree (id)
+ 2517439 | repack_user1 | idle in transaction | LOCK TABLE user1_schema.source_data IN ACCESS SHARE MODE
+ 2517713 | repack_user1 | active              | CREATE UNIQUE INDEX index_22711 ON repack.table_22704 USING btree (id)
+(7 rows)
 
 
 === TEST 10: repack_user2 attempts to query visible intermediate table ===
-Testing: repack.table_22610 (now committed and visible in pg_class)
+Testing: repack.table_22704 (now committed and visible in pg_class)
 Context: This tests ownership-based protection AFTER transaction commits
   ℹ INFO: repack_user2 can see table in pg_class (expected)
-ERROR:  permission denied for table table_22610
-✓ PASS: repack_user2 CANNOT query repack.table_22610 data (permission denied as expected)
+ERROR:  permission denied for table table_22704
+✓ PASS: repack_user2 CANNOT query repack.table_22704 data (permission denied as expected)
   Protection mechanism: Table ownership (owned by repack_user1)
 
 === TEST 11: repack_user2 attempts to query log table (post-commit) ===
-Testing: repack.log_22610 (committed and visible)
+Testing: repack.log_22704 (committed and visible)
 Context: Verifies log table protection after transaction commits
   ℹ INFO: repack_user2 can see log table in pg_class (expected)
-ERROR:  permission denied for table log_22610
-✓ PASS: repack_user2 CANNOT query repack.log_22610 data (permission denied as expected)
+ERROR:  permission denied for table log_22704
+✓ PASS: repack_user2 CANNOT query repack.log_22704 data (permission denied as expected)
   Protection mechanism: Table ownership (owned by repack_user1)
 
 === TEST 12: no_repack_user metadata visibility vs data access ===
 Context: Tests that metadata visibility doesn't grant data access
   ℹ INFO: no_repack_user can see table in pg_class (expected PostgreSQL behavior)
 ERROR:  permission denied for schema repack
-LINE 1: SELECT * FROM repack.table_22610 LIMIT 1;
+LINE 1: SELECT * FROM repack.table_22704 LIMIT 1;
                       ^
-✓ PASS: no_repack_user CANNOT access repack.table_22610 data (permission denied)
+✓ PASS: no_repack_user CANNOT access repack.table_22704 data (permission denied)
   Protection mechanism: Schema-level or table ownership permissions
 
 === TEST 13: no_repack_user attempts to query log table (post-commit) ===
-Testing: repack.log_22610
+Testing: repack.log_22704
 Context: Verifies log table protection for users without repack privileges
   ℹ INFO: no_repack_user can see log table in pg_class (expected)
 ERROR:  permission denied for schema repack
-LINE 1: SELECT * FROM repack.log_22610 LIMIT 1;
+LINE 1: SELECT * FROM repack.log_22704 LIMIT 1;
                       ^
-✓ PASS: no_repack_user CANNOT query repack.log_22610 data (permission denied)
+✓ PASS: no_repack_user CANNOT query repack.log_22704 data (permission denied)
   Protection mechanism: Schema-level or table ownership permissions
 
 === TEST 14: repack_user1 queries own intermediate table (post-commit) ===
-Testing: repack.table_22610 (committed and visible)
+Testing: repack.table_22704 (committed and visible)
 Context: Owner should have full access to their own table
   This also PROVES pg_repack is still in progress!
  row_count 
@@ -187,28 +194,28 @@ Context: Owner should have full access to their own table
   10000000
 (1 row)
 
-✓ PASS: repack_user1 CAN query their own repack.table_22610 (expected)
+✓ PASS: repack_user1 CAN query their own repack.table_22704 (expected)
   This confirms pg_repack is still in progress (table not yet swapped)
 
 === TEST 15: repack_user1 queries own log table (post-commit) ===
-Testing: repack.log_22610 (committed and visible)
+Testing: repack.log_22704 (committed and visible)
 Context: Owner should have full access to their own log table
  log_entries 
 -------------
-        1558
+        3717
 (1 row)
 
-✓ PASS: repack_user1 CAN query their own repack.log_22610 (expected)
+✓ PASS: repack_user1 CAN query their own repack.log_22704 (expected)
 
 === Stopping background workload ===
 ✓ Background workload stopped after completing all tests
 
 === Verifying log table captured concurrent updates ===
-Log entries captured: 1564
+Log entries captured: 3901
 ✓ Log table captured concurrent modifications during repack
  total_changes | unique_rows_changed 
 ---------------+---------------------
-          1564 |                1564
+          3907 |                3907
 (1 row)
 
 
@@ -221,6 +228,11 @@ Repack should complete within 10 minutes...
 ================================================================
                         TEST SUMMARY
 ================================================================
+
+Environment:
+  PostgreSQL client (psql): 17.7 (Ubuntu 17.7-0ubuntu0.25.04.1)
+  PostgreSQL server: PostgreSQL 17.7 (Ubuntu 17.7-0ubuntu0.25.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 14.2.0-19ubuntu2) 14.2.0, 64-bit
+  pg_repack extension: 1.5.2
 
 User Privilege Configuration:
   repack_user1: CAN run pg_repack

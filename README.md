@@ -37,7 +37,3 @@ Example results can be viewed in the file [test_multiuser_isolation.log](test_mu
 - `pgbench` for workload generation
 - Bash shell
 
-## License
-
-Apache License 2.0
-

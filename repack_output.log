@@ -1,210 +1,202 @@
-2025-12-14 08:18:16 LOG: (query) SET search_path TO pg_catalog, pg_temp, public
-2025-12-14 08:18:16 LOG: (query) SET search_path TO pg_catalog, pg_temp, public
-2025-12-14 08:18:16 LOG: (query) select repack.version(), repack.version_sql()
-2025-12-14 08:18:16 LOG: (query) SET statement_timeout = 0
-2025-12-14 08:18:16 LOG: (query) SET search_path = pg_catalog, pg_temp, public
-2025-12-14 08:18:16 LOG: (query) SET client_min_messages = warning
-2025-12-14 08:18:16 LOG: (query) SELECT r FROM (VALUES ($1, 'r')) AS given_t(r,kind) WHERE NOT EXISTS(  SELECT FROM repack.tables WHERE relid=to_regclass(given_t.r)) AND NOT EXISTS(  SELECT FROM pg_catalog.pg_class c WHERE c.oid=to_regclass(given_t.r) AND c.relkind = given_t.kind AND given_t.kind = 'p')
-2025-12-14 08:18:16 LOG: 	(param:0) = user1_schema.source_data
-2025-12-14 08:18:16 LOG: (query) SELECT t.*, coalesce(v.tablespace, t.tablespace_orig) as tablespace_dest FROM repack.tables t,  (VALUES ($1::text)) as v (tablespace) WHERE (relid = $2::regclass) ORDER BY t.relname, t.schemaname
-2025-12-14 08:18:16 LOG: 	(param:0) = (null)
-2025-12-14 08:18:16 LOG: 	(param:1) = user1_schema.source_data
-2025-12-14 08:18:16 INFO: repacking table "user1_schema.source_data"
-2025-12-14 08:18:16 LOG: (query) SELECT pg_try_advisory_lock($1, CAST(-2147483648 + $2::bigint AS integer))
-2025-12-14 08:18:16 LOG: 	(param:0) = 16185446
-2025-12-14 08:18:16 LOG: 	(param:1) = 22422
-2025-12-14 08:18:16 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
-2025-12-14 08:18:16 LOG: (query) SET LOCAL lock_timeout = 100
-2025-12-14 08:18:16 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:16 LOG: (query) RESET lock_timeout
-2025-12-14 08:18:16 LOG: (query) SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid = $1 AND NOT indisvalid
-2025-12-14 08:18:16 LOG: 	(param:0) = 22422
-2025-12-14 08:18:16 LOG: (query) SELECT indexrelid, repack.repack_indexdef(indexrelid, indrelid, $2, FALSE)  FROM pg_index WHERE indrelid = $1 AND indisvalid
-2025-12-14 08:18:16 LOG: 	(param:0) = 22422
-2025-12-14 08:18:16 LOG: 	(param:1) = (null)
-2025-12-14 08:18:16 LOG: (query) SELECT repack.conflicted_triggers($1)
-2025-12-14 08:18:16 LOG: 	(param:0) = 22422
-2025-12-14 08:18:16 LOG: (query) SELECT repack.create_index_type(22429,22422)
-2025-12-14 08:18:16 LOG: (query) SELECT repack.create_log_table(22422)
-2025-12-14 08:18:16 LOG: (query) CREATE TRIGGER repack_trigger AFTER INSERT OR DELETE OR UPDATE ON user1_schema.source_data FOR EACH ROW EXECUTE PROCEDURE repack.repack_trigger('id')
-2025-12-14 08:18:16 LOG: (query) ALTER TABLE user1_schema.source_data ENABLE ALWAYS TRIGGER repack_trigger
-2025-12-14 08:18:16 LOG: (query) SELECT repack.disable_autovacuum('repack.log_22422')
-2025-12-14 08:18:16 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
-2025-12-14 08:18:16 LOG: (query) SELECT pg_backend_pid()
-2025-12-14 08:18:16 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'relation' AND granted = false AND relation = 22422 AND mode = 'AccessExclusiveLock' AND pid <> pg_backend_pid()
-2025-12-14 08:18:16 LOG: (query) COMMIT
-2025-12-14 08:18:16 LOG: (query) BEGIN ISOLATION LEVEL SERIALIZABLE
-2025-12-14 08:18:16 LOG: (query) SELECT set_config('work_mem', current_setting('maintenance_work_mem'), true)
-2025-12-14 08:18:16 LOG: (query) SELECT coalesce(array_agg(l.virtualtransaction), '{}')   FROM pg_locks AS l   LEFT JOIN pg_stat_activity AS a     ON l.pid = a.pid   LEFT JOIN pg_database AS d     ON a.datid = d.oid   WHERE l.locktype = 'virtualxid'   AND l.pid NOT IN (pg_backend_pid(), $1)   AND (l.virtualxid, l.virtualtransaction) <> ('1/1', '-1/0')   AND (a.application_name IS NULL OR a.application_name <> $2)  AND a.query !~* E'^\s*vacuum\s+'   AND a.query !~ E'^autovacuum: '   AND ((d.datname IS NULL OR d.datname = current_database()) OR l.database = 0)
-2025-12-14 08:18:16 LOG: 	(param:0) = 2356717
-2025-12-14 08:18:16 LOG: 	(param:1) = pg_repack
-2025-12-14 08:18:16 LOG: (query) DELETE FROM repack.log_22422
-2025-12-14 08:18:16 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:16 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'relation' AND granted = false AND relation = 22422 AND mode = 'AccessExclusiveLock' AND pid <> pg_backend_pid()
-2025-12-14 08:18:16 LOG: (query) SET LOCAL lock_timeout = 100
-2025-12-14 08:18:16 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS SHARE MODE
-2025-12-14 08:18:16 LOG: (query) RESET lock_timeout
-2025-12-14 08:18:16 LOG: (query) SELECT repack.create_table($1, $2)
-2025-12-14 08:18:16 LOG: 	(param:0) = 22422
-2025-12-14 08:18:16 LOG: 	(param:1) = pg_default
-2025-12-14 08:18:16 LOG: (query) INSERT INTO repack.table_22422 SELECT id,data,created_at FROM ONLY user1_schema.source_data
-2025-12-14 08:18:25 LOG: (query) SELECT repack.disable_autovacuum('repack.table_22422')
-2025-12-14 08:18:25 LOG: (query) COMMIT
-2025-12-14 08:18:25 LOG: (query) SELECT 'repack.table_22422'::regclass::oid
-2025-12-14 08:18:25 LOG: (query) CREATE UNIQUE INDEX index_22429 ON repack.table_22422 USING btree (id)
-2025-12-14 08:18:28 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
-2025-12-14 08:18:28 LOG: 	(param:0) = SELECT * FROM repack.log_22422 ORDER BY id LIMIT $1
-2025-12-14 08:18:28 LOG: 	(param:1) = INSERT INTO repack.table_22422 VALUES ($1.*)
-2025-12-14 08:18:28 LOG: 	(param:2) = DELETE FROM repack.table_22422 WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:3) = UPDATE repack.table_22422 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:4) = DELETE FROM repack.log_22422 WHERE id IN (
-2025-12-14 08:18:28 LOG: 	(param:5) = 1000
-2025-12-14 08:18:28 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
-2025-12-14 08:18:28 LOG: 	(param:0) = SELECT * FROM repack.log_22422 ORDER BY id LIMIT $1
-2025-12-14 08:18:28 LOG: 	(param:1) = INSERT INTO repack.table_22422 VALUES ($1.*)
-2025-12-14 08:18:28 LOG: 	(param:2) = DELETE FROM repack.table_22422 WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:3) = UPDATE repack.table_22422 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:4) = DELETE FROM repack.log_22422 WHERE id IN (
-2025-12-14 08:18:28 LOG: 	(param:5) = 1000
-2025-12-14 08:18:28 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
-2025-12-14 08:18:28 LOG: 	(param:0) = SELECT * FROM repack.log_22422 ORDER BY id LIMIT $1
-2025-12-14 08:18:28 LOG: 	(param:1) = INSERT INTO repack.table_22422 VALUES ($1.*)
-2025-12-14 08:18:28 LOG: 	(param:2) = DELETE FROM repack.table_22422 WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:3) = UPDATE repack.table_22422 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
-2025-12-14 08:18:28 LOG: 	(param:4) = DELETE FROM repack.log_22422 WHERE id IN (
-2025-12-14 08:18:28 LOG: 	(param:5) = 1000
-2025-12-14 08:18:28 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'virtualxid' AND pid <> pg_backend_pid() AND virtualtransaction = ANY($1)
-2025-12-14 08:18:28 LOG: 	(param:0) = {6/1512,68/10526}
-2025-12-14 08:18:28 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:28 LOG: (query) SET LOCAL lock_timeout = 100
-2025-12-14 08:18:28 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:28 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:28 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:28 LOG: (query) SET LOCAL lock_timeout = 200
-2025-12-14 08:18:28 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:29 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SET LOCAL lock_timeout = 300
-2025-12-14 08:18:29 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:29 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SET LOCAL lock_timeout = 400
-2025-12-14 08:18:29 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:29 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:29 LOG: (query) SET LOCAL lock_timeout = 500
-2025-12-14 08:18:29 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:30 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:30 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:30 LOG: (query) SET LOCAL lock_timeout = 600
-2025-12-14 08:18:30 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:30 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:30 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:30 LOG: (query) SET LOCAL lock_timeout = 700
-2025-12-14 08:18:30 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:31 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:31 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:31 LOG: (query) SET LOCAL lock_timeout = 800
-2025-12-14 08:18:31 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:32 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:32 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:32 LOG: (query) SET LOCAL lock_timeout = 900
-2025-12-14 08:18:32 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:33 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:33 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:33 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:33 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:34 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:34 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:34 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:34 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:35 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:35 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:35 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:35 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:36 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:36 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:36 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:36 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:37 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:37 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:37 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:37 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:38 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:38 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:38 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:38 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:39 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:39 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:39 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:39 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:40 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:40 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:40 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:40 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:41 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:41 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:41 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:41 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:42 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:42 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:42 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:42 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:43 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:43 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:43 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:43 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:44 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:44 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:44 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:44 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:45 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:45 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:45 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:45 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:46 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:46 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:46 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:46 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:47 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:47 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:47 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:47 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:48 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:48 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:48 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:48 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:49 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
-2025-12-14 08:18:49 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:49 LOG: (query) SET LOCAL lock_timeout = 1000
-2025-12-14 08:18:49 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:49 LOG: (query) RESET lock_timeout
-2025-12-14 08:18:49 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:49 LOG: (query) SET LOCAL lock_timeout = 100
-2025-12-14 08:18:49 LOG: (query) LOCK TABLE repack.table_22422 IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:49 LOG: (query) RESET lock_timeout
-2025-12-14 08:18:49 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
-2025-12-14 08:18:49 LOG: 	(param:0) = SELECT * FROM repack.log_22422 ORDER BY id LIMIT $1
-2025-12-14 08:18:49 LOG: 	(param:1) = INSERT INTO repack.table_22422 VALUES ($1.*)
-2025-12-14 08:18:49 LOG: 	(param:2) = DELETE FROM repack.table_22422 WHERE (id) = ($1.id)
-2025-12-14 08:18:49 LOG: 	(param:3) = UPDATE repack.table_22422 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
-2025-12-14 08:18:49 LOG: 	(param:4) = DELETE FROM repack.log_22422 WHERE id IN (
-2025-12-14 08:18:49 LOG: 	(param:5) = 0
-2025-12-14 08:18:49 LOG: (query) SELECT repack.repack_swap($1)
-2025-12-14 08:18:49 LOG: 	(param:0) = 22422
-2025-12-14 08:18:49 LOG: (query) COMMIT
-2025-12-14 08:18:49 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
-2025-12-14 08:18:50 LOG: (query) SAVEPOINT repack_sp1
-2025-12-14 08:18:50 LOG: (query) SET LOCAL lock_timeout = 100
-2025-12-14 08:18:50 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
-2025-12-14 08:18:50 LOG: (query) RESET lock_timeout
-2025-12-14 08:18:50 LOG: (query) SELECT repack.repack_drop($1, $2)
-2025-12-14 08:18:50 LOG: 	(param:0) = 22422
-2025-12-14 08:18:50 LOG: 	(param:1) = 4
-2025-12-14 08:18:50 LOG: (query) COMMIT
-2025-12-14 08:18:50 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
-2025-12-14 08:18:50 LOG: (query) ANALYZE user1_schema.source_data
-2025-12-14 08:18:50 LOG: (query) COMMIT
-2025-12-14 08:18:50 LOG: (query) SELECT pg_advisory_unlock($1, CAST(-2147483648 + $2::bigint AS integer))
-2025-12-14 08:18:50 LOG: 	(param:0) = 16185446
-2025-12-14 08:18:50 LOG: 	(param:1) = 22422
+2025-12-14 21:56:40 LOG: (query) SET search_path TO pg_catalog, pg_temp, public
+2025-12-14 21:56:40 LOG: (query) SET search_path TO pg_catalog, pg_temp, public
+2025-12-14 21:56:40 LOG: (query) select repack.version(), repack.version_sql()
+2025-12-14 21:56:40 LOG: (query) SET statement_timeout = 0
+2025-12-14 21:56:40 LOG: (query) SET search_path = pg_catalog, pg_temp, public
+2025-12-14 21:56:40 LOG: (query) SET client_min_messages = warning
+2025-12-14 21:56:40 LOG: (query) SELECT r FROM (VALUES ($1, 'r')) AS given_t(r,kind) WHERE NOT EXISTS(  SELECT FROM repack.tables WHERE relid=to_regclass(given_t.r)) AND NOT EXISTS(  SELECT FROM pg_catalog.pg_class c WHERE c.oid=to_regclass(given_t.r) AND c.relkind = given_t.kind AND given_t.kind = 'p')
+2025-12-14 21:56:40 LOG: 	(param:0) = user1_schema.source_data
+2025-12-14 21:56:40 LOG: (query) SELECT t.*, coalesce(v.tablespace, t.tablespace_orig) as tablespace_dest FROM repack.tables t,  (VALUES ($1::text)) as v (tablespace) WHERE (relid = $2::regclass) ORDER BY t.relname, t.schemaname
+2025-12-14 21:56:40 LOG: 	(param:0) = (null)
+2025-12-14 21:56:40 LOG: 	(param:1) = user1_schema.source_data
+2025-12-14 21:56:40 INFO: repacking table "user1_schema.source_data"
+2025-12-14 21:56:40 LOG: (query) SELECT pg_try_advisory_lock($1, CAST(-2147483648 + $2::bigint AS integer))
+2025-12-14 21:56:40 LOG: 	(param:0) = 16185446
+2025-12-14 21:56:40 LOG: 	(param:1) = 22610
+2025-12-14 21:56:40 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
+2025-12-14 21:56:40 LOG: (query) SET LOCAL lock_timeout = 100
+2025-12-14 21:56:40 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:40 LOG: (query) RESET lock_timeout
+2025-12-14 21:56:40 LOG: (query) SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid = $1 AND NOT indisvalid
+2025-12-14 21:56:40 LOG: 	(param:0) = 22610
+2025-12-14 21:56:40 LOG: (query) SELECT indexrelid, repack.repack_indexdef(indexrelid, indrelid, $2, FALSE)  FROM pg_index WHERE indrelid = $1 AND indisvalid
+2025-12-14 21:56:40 LOG: 	(param:0) = 22610
+2025-12-14 21:56:40 LOG: 	(param:1) = (null)
+2025-12-14 21:56:40 LOG: (query) SELECT repack.conflicted_triggers($1)
+2025-12-14 21:56:40 LOG: 	(param:0) = 22610
+2025-12-14 21:56:40 LOG: (query) SELECT repack.create_index_type(22617,22610)
+2025-12-14 21:56:40 LOG: (query) SELECT repack.create_log_table(22610)
+2025-12-14 21:56:40 LOG: (query) CREATE TRIGGER repack_trigger AFTER INSERT OR DELETE OR UPDATE ON user1_schema.source_data FOR EACH ROW EXECUTE PROCEDURE repack.repack_trigger('id')
+2025-12-14 21:56:40 LOG: (query) ALTER TABLE user1_schema.source_data ENABLE ALWAYS TRIGGER repack_trigger
+2025-12-14 21:56:40 LOG: (query) SELECT repack.disable_autovacuum('repack.log_22610')
+2025-12-14 21:56:40 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
+2025-12-14 21:56:40 LOG: (query) SELECT pg_backend_pid()
+2025-12-14 21:56:40 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'relation' AND granted = false AND relation = 22610 AND mode = 'AccessExclusiveLock' AND pid <> pg_backend_pid()
+2025-12-14 21:56:40 LOG: (query) COMMIT
+2025-12-14 21:56:40 LOG: (query) BEGIN ISOLATION LEVEL SERIALIZABLE
+2025-12-14 21:56:40 LOG: (query) SELECT set_config('work_mem', current_setting('maintenance_work_mem'), true)
+2025-12-14 21:56:40 LOG: (query) SELECT coalesce(array_agg(l.virtualtransaction), '{}')   FROM pg_locks AS l   LEFT JOIN pg_stat_activity AS a     ON l.pid = a.pid   LEFT JOIN pg_database AS d     ON a.datid = d.oid   WHERE l.locktype = 'virtualxid'   AND l.pid NOT IN (pg_backend_pid(), $1)   AND (l.virtualxid, l.virtualtransaction) <> ('1/1', '-1/0')   AND (a.application_name IS NULL OR a.application_name <> $2)  AND a.query !~* E'^\s*vacuum\s+'   AND a.query !~ E'^autovacuum: '   AND ((d.datname IS NULL OR d.datname = current_database()) OR l.database = 0)
+2025-12-14 21:56:40 LOG: 	(param:0) = 2510876
+2025-12-14 21:56:40 LOG: 	(param:1) = pg_repack
+2025-12-14 21:56:40 LOG: (query) DELETE FROM repack.log_22610
+2025-12-14 21:56:40 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:40 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'relation' AND granted = false AND relation = 22610 AND mode = 'AccessExclusiveLock' AND pid <> pg_backend_pid()
+2025-12-14 21:56:40 LOG: (query) SET LOCAL lock_timeout = 100
+2025-12-14 21:56:40 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS SHARE MODE
+2025-12-14 21:56:40 LOG: (query) RESET lock_timeout
+2025-12-14 21:56:40 LOG: (query) SELECT repack.create_table($1, $2)
+2025-12-14 21:56:40 LOG: 	(param:0) = 22610
+2025-12-14 21:56:40 LOG: 	(param:1) = pg_default
+2025-12-14 21:56:40 LOG: (query) INSERT INTO repack.table_22610 SELECT id,data,created_at FROM ONLY user1_schema.source_data
+2025-12-14 21:56:49 LOG: (query) SELECT repack.disable_autovacuum('repack.table_22610')
+2025-12-14 21:56:49 LOG: (query) COMMIT
+2025-12-14 21:56:49 LOG: (query) SELECT 'repack.table_22610'::regclass::oid
+2025-12-14 21:56:49 LOG: (query) CREATE UNIQUE INDEX index_22617 ON repack.table_22610 USING btree (id)
+2025-12-14 21:56:53 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
+2025-12-14 21:56:53 LOG: 	(param:0) = SELECT * FROM repack.log_22610 ORDER BY id LIMIT $1
+2025-12-14 21:56:53 LOG: 	(param:1) = INSERT INTO repack.table_22610 VALUES ($1.*)
+2025-12-14 21:56:53 LOG: 	(param:2) = DELETE FROM repack.table_22610 WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:3) = UPDATE repack.table_22610 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:4) = DELETE FROM repack.log_22610 WHERE id IN (
+2025-12-14 21:56:53 LOG: 	(param:5) = 1000
+2025-12-14 21:56:53 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
+2025-12-14 21:56:53 LOG: 	(param:0) = SELECT * FROM repack.log_22610 ORDER BY id LIMIT $1
+2025-12-14 21:56:53 LOG: 	(param:1) = INSERT INTO repack.table_22610 VALUES ($1.*)
+2025-12-14 21:56:53 LOG: 	(param:2) = DELETE FROM repack.table_22610 WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:3) = UPDATE repack.table_22610 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:4) = DELETE FROM repack.log_22610 WHERE id IN (
+2025-12-14 21:56:53 LOG: 	(param:5) = 1000
+2025-12-14 21:56:53 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
+2025-12-14 21:56:53 LOG: 	(param:0) = SELECT * FROM repack.log_22610 ORDER BY id LIMIT $1
+2025-12-14 21:56:53 LOG: 	(param:1) = INSERT INTO repack.table_22610 VALUES ($1.*)
+2025-12-14 21:56:53 LOG: 	(param:2) = DELETE FROM repack.table_22610 WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:3) = UPDATE repack.table_22610 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
+2025-12-14 21:56:53 LOG: 	(param:4) = DELETE FROM repack.log_22610 WHERE id IN (
+2025-12-14 21:56:53 LOG: 	(param:5) = 1000
+2025-12-14 21:56:53 LOG: (query) SELECT pid FROM pg_locks WHERE locktype = 'virtualxid' AND pid <> pg_backend_pid() AND virtualtransaction = ANY($1)
+2025-12-14 21:56:53 LOG: 	(param:0) = {40/404,76/369}
+2025-12-14 21:56:53 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SET LOCAL lock_timeout = 100
+2025-12-14 21:56:53 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:53 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SET LOCAL lock_timeout = 200
+2025-12-14 21:56:53 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:53 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SET LOCAL lock_timeout = 300
+2025-12-14 21:56:53 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:53 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:53 LOG: (query) SET LOCAL lock_timeout = 400
+2025-12-14 21:56:53 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:54 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:54 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:54 LOG: (query) SET LOCAL lock_timeout = 500
+2025-12-14 21:56:54 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:54 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:54 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:54 LOG: (query) SET LOCAL lock_timeout = 600
+2025-12-14 21:56:54 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:55 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:55 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:55 LOG: (query) SET LOCAL lock_timeout = 700
+2025-12-14 21:56:55 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:55 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:55 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:55 LOG: (query) SET LOCAL lock_timeout = 800
+2025-12-14 21:56:55 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:56 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:56 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:56 LOG: (query) SET LOCAL lock_timeout = 900
+2025-12-14 21:56:56 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:57 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:57 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:57 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:56:57 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:58 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:58 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:58 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:56:58 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:56:59 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:56:59 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:56:59 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:56:59 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:00 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:00 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:00 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:00 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:01 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:01 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:01 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:01 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:02 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:02 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:02 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:02 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:03 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:03 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:03 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:03 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:04 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:04 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:04 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:04 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:05 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:05 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:05 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:05 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:06 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:06 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:06 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:06 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:07 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:07 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:07 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:07 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:08 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:08 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:08 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:08 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:09 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:09 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:09 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:09 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:10 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:10 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:10 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:10 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:11 LOG: (query) ROLLBACK TO SAVEPOINT repack_sp1
+2025-12-14 21:57:11 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:11 LOG: (query) SET LOCAL lock_timeout = 1000
+2025-12-14 21:57:11 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:12 LOG: (query) RESET lock_timeout
+2025-12-14 21:57:12 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:12 LOG: (query) SET LOCAL lock_timeout = 100
+2025-12-14 21:57:12 LOG: (query) LOCK TABLE repack.table_22610 IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:12 LOG: (query) RESET lock_timeout
+2025-12-14 21:57:12 LOG: (query) SELECT repack.repack_apply($1, $2, $3, $4, $5, $6)
+2025-12-14 21:57:12 LOG: 	(param:0) = SELECT * FROM repack.log_22610 ORDER BY id LIMIT $1
+2025-12-14 21:57:12 LOG: 	(param:1) = INSERT INTO repack.table_22610 VALUES ($1.*)
+2025-12-14 21:57:12 LOG: 	(param:2) = DELETE FROM repack.table_22610 WHERE (id) = ($1.id)
+2025-12-14 21:57:12 LOG: 	(param:3) = UPDATE repack.table_22610 SET (id, data, created_at) = ($2.id, $2.data, $2.created_at) WHERE (id) = ($1.id)
+2025-12-14 21:57:12 LOG: 	(param:4) = DELETE FROM repack.log_22610 WHERE id IN (
+2025-12-14 21:57:12 LOG: 	(param:5) = 0
+2025-12-14 21:57:12 LOG: (query) SELECT repack.repack_swap($1)
+2025-12-14 21:57:12 LOG: 	(param:0) = 22610
+2025-12-14 21:57:12 LOG: (query) COMMIT
+2025-12-14 21:57:12 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
+2025-12-14 21:57:12 LOG: (query) SAVEPOINT repack_sp1
+2025-12-14 21:57:12 LOG: (query) SET LOCAL lock_timeout = 100
+2025-12-14 21:57:12 LOG: (query) LOCK TABLE user1_schema.source_data IN ACCESS EXCLUSIVE MODE
+2025-12-14 21:57:12 LOG: (query) RESET lock_timeout
+2025-12-14 21:57:12 LOG: (query) SELECT repack.repack_drop($1, $2)
+2025-12-14 21:57:12 LOG: 	(param:0) = 22610
+2025-12-14 21:57:12 LOG: 	(param:1) = 4
+2025-12-14 21:57:12 LOG: (query) COMMIT
+2025-12-14 21:57:12 LOG: (query) BEGIN ISOLATION LEVEL READ COMMITTED
+2025-12-14 21:57:12 LOG: (query) ANALYZE user1_schema.source_data
+2025-12-14 21:57:13 LOG: (query) COMMIT
+2025-12-14 21:57:13 LOG: (query) SELECT pg_advisory_unlock($1, CAST(-2147483648 + $2::bigint AS integer))
+2025-12-14 21:57:13 LOG: 	(param:0) = 16185446
+2025-12-14 21:57:13 LOG: 	(param:1) = 22610
